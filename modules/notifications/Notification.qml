@@ -10,6 +10,7 @@ import Quickshell.Widgets
 import Quickshell.Services.Notifications
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Shapes
 
 StyledRect {
     id: root
@@ -17,8 +18,9 @@ StyledRect {
     required property Notifs.Notif modelData
     readonly property bool hasImage: modelData.image.length > 0
     readonly property bool hasAppIcon: modelData.appIcon.length > 0
+    readonly property int bodyTextFormat: /[<*_`#\[\]]/.test(modelData.body) ? Text.MarkdownText : Text.PlainText
     readonly property int nonAnimHeight: summary.implicitHeight + (root.expanded ? appName.height + body.height + actions.height + actions.anchors.topMargin : bodyPreview.height) + inner.anchors.margins * 2
-    property bool expanded
+    property bool expanded: Config.notifs.openExpanded
 
     color: root.modelData.urgency === NotificationUrgency.Critical ? Colours.palette.m3secondaryContainer : Colours.tPalette.m3surfaceContainer
     radius: Appearance.rounding.normal
@@ -108,7 +110,6 @@ StyledRect {
                 id: image
 
                 active: root.hasImage
-                asynchronous: true
 
                 anchors.left: parent.left
                 anchors.top: parent.top
@@ -125,6 +126,8 @@ StyledRect {
                         anchors.fill: parent
                         source: Qt.resolvedUrl(root.modelData.image)
                         fillMode: Image.PreserveAspectCrop
+                        sourceSize.width: Config.notifs.sizes.image
+                        sourceSize.height: Config.notifs.sizes.image
                         cache: false
                         asynchronous: true
                     }
@@ -135,7 +138,6 @@ StyledRect {
                 id: appIcon
 
                 active: root.hasAppIcon || !root.hasImage
-                asynchronous: true
 
                 anchors.horizontalCenter: root.hasImage ? undefined : image.horizontalCenter
                 anchors.verticalCenter: root.hasImage ? undefined : image.verticalCenter
@@ -152,7 +154,6 @@ StyledRect {
                         id: icon
 
                         active: root.hasAppIcon
-                        asynchronous: true
 
                         anchors.centerIn: parent
 
@@ -169,7 +170,6 @@ StyledRect {
 
                     Loader {
                         active: !root.hasAppIcon
-                        asynchronous: true
                         anchors.centerIn: parent
                         anchors.horizontalCenterOffset: -Appearance.font.size.large * 0.02
                         anchors.verticalCenterOffset: Appearance.font.size.large * 0.02
@@ -179,6 +179,42 @@ StyledRect {
 
                             color: root.modelData.urgency === NotificationUrgency.Critical ? Colours.palette.m3onError : root.modelData.urgency === NotificationUrgency.Low ? Colours.palette.m3onSurface : Colours.palette.m3onSecondaryContainer
                             font.pointSize: Appearance.font.size.large
+                        }
+                    }
+                }
+            }
+
+            Shape {
+                id: progressIndicator
+
+                anchors.centerIn: appIcon
+                width: appIcon.implicitWidth + progressShape.strokeWidth * 2
+                height: appIcon.implicitHeight + progressShape.strokeWidth * 2
+                preferredRendererType: Shape.CurveRenderer
+
+                ShapePath {
+                    id: progressShape
+
+                    capStyle: ShapePath.RoundCap
+                    fillColor: "transparent"
+                    strokeWidth: 2
+                    strokeColor: Colours.palette.m3primary
+
+                    PathAngleArc {
+                        id: progressArc
+
+                        radiusX: progressIndicator.width / 2 - Appearance.padding.small / 2
+                        centerX: progressIndicator.width / 2
+                        radiusY: progressIndicator.height / 2 - Appearance.padding.small / 2
+                        centerY: progressIndicator.height / 2
+
+                        startAngle: -90
+                        sweepAngle: ((root.modelData.hints.value ?? 0) / 100) * 360
+
+                        Behavior on sweepAngle {
+                            Anim {
+                                easing.bezierCurve: Appearance.anim.curves.emphasizedDecel
+                            }
                         }
                     }
                 }
@@ -349,7 +385,7 @@ StyledRect {
                 anchors.rightMargin: Appearance.spacing.small
 
                 animate: true
-                textFormat: Text.MarkdownText
+                textFormat: root.bodyTextFormat
                 text: bodyPreviewMetrics.elidedText
                 color: Colours.palette.m3onSurfaceVariant
                 font.pointSize: Appearance.font.size.small
@@ -380,7 +416,7 @@ StyledRect {
                 anchors.rightMargin: Appearance.spacing.small
 
                 animate: true
-                textFormat: Text.MarkdownText
+                textFormat: root.bodyTextFormat
                 text: root.modelData.body
                 color: Colours.palette.m3onSurfaceVariant
                 font.pointSize: Appearance.font.size.small

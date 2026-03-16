@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 
 import qs.components.containers
 import qs.components.misc
+import qs.services
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Io
@@ -12,9 +13,10 @@ Scope {
 
         property bool freeze
         property bool closing
+        property bool clipboardOnly
 
         Variants {
-            model: Quickshell.screens
+            model: Screens.screens
 
             StyledWindow {
                 id: win
@@ -51,12 +53,28 @@ Scope {
         function open(): void {
             root.freeze = false;
             root.closing = false;
+            root.clipboardOnly = false;
             root.activeAsync = true;
         }
 
         function openFreeze(): void {
             root.freeze = true;
             root.closing = false;
+            root.clipboardOnly = false;
+            root.activeAsync = true;
+        }
+
+        function openClip(): void {
+            root.freeze = false;
+            root.closing = false;
+            root.clipboardOnly = true;
+            root.activeAsync = true;
+        }
+
+        function openFreezeClip(): void {
+            root.freeze = true;
+            root.closing = false;
+            root.clipboardOnly = true;
             root.activeAsync = true;
         }
     }
@@ -67,6 +85,7 @@ Scope {
         onPressed: {
             root.freeze = false;
             root.closing = false;
+            root.clipboardOnly = false;
             root.activeAsync = true;
         }
     }
@@ -77,6 +96,29 @@ Scope {
         onPressed: {
             root.freeze = true;
             root.closing = false;
+            root.clipboardOnly = false;
+            root.activeAsync = true;
+        }
+    }
+
+    CustomShortcut {
+        name: "screenshotClip"
+        description: "Open screenshot tool (clipboard)"
+        onPressed: {
+            root.freeze = false;
+            root.closing = false;
+            root.clipboardOnly = true;
+            root.activeAsync = true;
+        }
+    }
+
+    CustomShortcut {
+        name: "screenshotFreezeClip"
+        description: "Open screenshot tool (freeze mode, clipboard)"
+        onPressed: {
+            root.freeze = true;
+            root.closing = false;
+            root.clipboardOnly = true;
             root.activeAsync = true;
         }
     }

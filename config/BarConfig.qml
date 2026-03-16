@@ -5,11 +5,14 @@ JsonObject {
     property bool showOnHover: true
     property int dragThreshold: 20
     property ScrollActions scrollActions: ScrollActions {}
+    property Popouts popouts: Popouts {}
     property Workspaces workspaces: Workspaces {}
+    property ActiveWindow activeWindow: ActiveWindow {}
     property Tray tray: Tray {}
     property Status status: Status {}
     property Clock clock: Clock {}
     property Sizes sizes: Sizes {}
+    property list<string> excludedScreens: []
 
     property list<var> entries: [
         {
@@ -56,12 +59,19 @@ JsonObject {
         property bool brightness: true
     }
 
+    component Popouts: JsonObject {
+        property bool activeWindow: true
+        property bool tray: true
+        property bool statusIcons: true
+    }
+
     component Workspaces: JsonObject {
         property int shown: 5
         property bool activeIndicator: true
         property bool occupiedBg: false
         property bool showWindows: true
         property bool showWindowsOnSpecialWorkspaces: showWindows
+        property int maxWindowIcons: 0 // 0 = unlimited
         property bool activeTrail: false
         property bool perMonitorWorkspaces: true
         property string label: "  " // if empty, will show workspace name's first letter
@@ -69,6 +79,18 @@ JsonObject {
         property string activeLabel: "󰮯"
         property string capitalisation: "preserve" // upper, lower, or preserve - relevant only if label is empty
         property list<var> specialWorkspaceIcons: []
+        property list<var> windowIcons: [
+            {
+                regex: "steam(_app_(default|[0-9]+))?",
+                icon: "sports_esports"
+            }
+        ]
+    }
+
+    component ActiveWindow: JsonObject {
+        property bool compact: false
+        property bool inverted: false
+        property bool showOnHover: true
     }
 
     component Tray: JsonObject {
@@ -76,6 +98,7 @@ JsonObject {
         property bool recolour: false
         property bool compact: false
         property list<var> iconSubs: []
+        property list<string> hiddenIcons: []
     }
 
     component Status: JsonObject {
@@ -83,6 +106,7 @@ JsonObject {
         property bool showMicrophone: false
         property bool showKbLayout: false
         property bool showNetwork: true
+        property bool showWifi: true
         property bool showBluetooth: true
         property bool showBattery: true
         property bool showLockStatus: true
@@ -98,5 +122,6 @@ JsonObject {
         property int trayMenuWidth: 300
         property int batteryWidth: 250
         property int networkWidth: 320
+        property int kbLayoutWidth: 320
     }
 }

@@ -57,8 +57,8 @@ bool FileSystemEntry::isImage() const {
 
 QString FileSystemEntry::mimeType() const {
     if (!m_mimeTypeInitialised) {
-        const QMimeDatabase db;
-        m_mimeType = db.mimeTypeForFile(m_path).name();
+        static const QMimeDatabase s_db;
+        m_mimeType = s_db.mimeTypeForFile(m_path).name();
         m_mimeTypeInitialised = true;
     }
     return m_mimeType;
@@ -211,8 +211,8 @@ void FileSystemModel::setNameFilters(const QStringList& nameFilters) {
     update();
 }
 
-QList<FileSystemEntry*> FileSystemModel::entries() const {
-    return m_entries;
+QQmlListProperty<FileSystemEntry> FileSystemModel::entries() {
+    return QQmlListProperty<FileSystemEntry>(this, &m_entries);
 }
 
 void FileSystemModel::watchDirIfRecursive(const QString& path) {

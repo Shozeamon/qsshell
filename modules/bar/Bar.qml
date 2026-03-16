@@ -45,7 +45,7 @@ ColumnLayout {
         const item = ch.item;
         const itemHeight = item.implicitHeight;
 
-        if (id === "statusIcons") {
+        if (id === "statusIcons" && Config.bar.popouts.statusIcons) {
             const items = item.items;
             const icon = items.childAt(items.width / 2, mapToItem(items, 0, y).y);
             if (icon) {
@@ -53,7 +53,7 @@ ColumnLayout {
                 popouts.currentCenter = Qt.binding(() => icon.mapToItem(root, 0, icon.implicitHeight / 2).y);
                 popouts.hasCurrent = true;
             }
-        } else if (id === "tray") {
+        } else if (id === "tray" && Config.bar.popouts.tray) {
             if (!Config.bar.tray.compact || (item.expanded && !item.expandIcon.contains(mapToItem(item.expandIcon, item.implicitWidth / 2, y)))) {
                 const index = Math.floor(((y - top - item.padding * 2 + item.spacing) / item.layout.implicitHeight) * item.items.count);
                 const trayItem = item.items.itemAt(index);
@@ -68,7 +68,7 @@ ColumnLayout {
                 popouts.hasCurrent = false;
                 item.expanded = true;
             }
-        } else if (id === "activeWindow") {
+        } else if (id === "activeWindow" && Config.bar.popouts.activeWindow && Config.bar.activeWindow.showOnHover) {
             popouts.currentName = id.toLowerCase();
             popouts.currentCenter = item.mapToItem(root, 0, itemHeight / 2).y;
             popouts.hasCurrent = true;
@@ -95,9 +95,9 @@ ColumnLayout {
             // Brightness scroll on bottom half
             const monitor = Brightness.getMonitorForScreen(screen);
             if (angleDelta.y > 0)
-                monitor.setBrightness(monitor.brightness + 0.1);
+                monitor.setBrightness(monitor.brightness + Config.services.brightnessIncrement);
             else if (angleDelta.y < 0)
-                monitor.setBrightness(monitor.brightness - 0.1);
+                monitor.setBrightness(monitor.brightness - Config.services.brightnessIncrement);
         }
     }
 
@@ -134,6 +134,7 @@ ColumnLayout {
             DelegateChoice {
                 roleValue: "activeWindow"
                 delegate: WrappedLoader {
+                    Layout.fillWidth: true
                     sourceComponent: ActiveWindow {
                         bar: root
                         monitor: Brightness.getMonitorForScreen(root.screen)
